@@ -1,55 +1,82 @@
-﻿using System;
-
-namespace CaveExplorerTracker
+﻿namespace CaveExplorerTracker
 {
-    // This class represents a single cave in the program.
-    // It stores all the important details about a cave.
     public class Cave
     {
-        // The name of the cave
-        public string CaveName { get; set; }
+        // Backing fields (encapsulation)
+        private string caveName;
+        private string location;
+        private int depthInFeet;
 
-        // Where the cave is located
-        public string Location { get; set; }
-
-        // How deep the cave is (in feet)
-        public int DepthInFeet { get; set; }
-
-        // How long the cave is (in feet)
         public int LengthInFeet { get; set; }
-
-        // Whether the cave has been explored or not
         public bool IsExplored { get; set; }
-
-        // The danger level of the cave "Low, Medium, High, etc."
         public string DangerLevel { get; set; }
 
-        // Constructor: runs when a new Cave object is created
-        // It sets all the values for the cave
-        public Cave(string caveName, string location, int depthInFeet, int lengthInFeet, bool isExplored, string dangerLevel)
+        // Encapsulated Property 1
+        public string CaveName
         {
-            CaveName = caveName;
+            get { return caveName; }
+            set
+            {
+                if (!string.IsNullOrWhiteSpace(value))
+                    caveName = value;
+                else
+                    caveName = "Unknown Cave";
+            }
+        }
+
+        // Encapsulated Property 2
+        public string Location
+        {
+            get { return location; }
+            set
+            {
+                if (!string.IsNullOrWhiteSpace(value))
+                    location = value;
+                else
+                    location = "Unknown Location";
+            }
+        }
+
+        // Encapsulated Property 3
+        public int DepthInFeet
+        {
+            get { return depthInFeet; }
+            set
+            {
+                if (value >= 0)
+                    depthInFeet = value;
+                else
+                    depthInFeet = 0;
+            }
+        }
+
+        public Cave() { }
+
+        public Cave(string name, string location, int depth, int length, bool explored, string danger)
+        {
+            CaveName = name;
             Location = location;
-            DepthInFeet = depthInFeet;
-            LengthInFeet = lengthInFeet;
-            IsExplored = isExplored;
-            DangerLevel = dangerLevel;
+            DepthInFeet = depth;
+            LengthInFeet = length;
+            IsExplored = explored;
+            DangerLevel = danger;
         }
 
-        // Returns a simple text version of the exploration status
-        public string GetExplorationStatus()
+        // Display all
+        public virtual string display()
         {
-            if (IsExplored)
-                return "Explored";
+            return $"{CaveName} | {Location} | Depth: {DepthInFeet} | Length: {LengthInFeet} | Explored: {IsExplored} | Danger: {DangerLevel}";
+        }
+
+        // Display partial
+        public virtual string display(int num)
+        {
+            if (num == 1)
+                return $"Name: {CaveName}";
+            else if (num == 2)
+                return $"Name: {CaveName}, Location: {Location}";
             else
-                return "Not Explored";
-        }
-
-        // Returns all cave info in one formatted string
-        // This is useful for displaying in the GUI
-        public string GetCaveSummary()
-        {
-            return $"Name: {CaveName} | Location: {Location} | Depth: {DepthInFeet} ft | Length: {LengthInFeet} ft | Status: {GetExplorationStatus()} | Danger: {DangerLevel}";
+                return display();
         }
     }
 }

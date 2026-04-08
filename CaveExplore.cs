@@ -6,165 +6,101 @@ namespace CaveExplorerTracker
 {
     public partial class CaveExplore : Form
     {
-        // This list stores all Cave objects created by the user.
-        private List<Cave> caveList = new List<Cave>();
+        // This list stores all cave objects created in the program.
+        private List<Cave> caves = new List<Cave>();
 
         public CaveExplore()
         {
             InitializeComponent();
 
-            // Set up the form when it opens.
-            SetUpDangerLevelComboBox();
-            SetUpListBox();
+            // Set up combo boxes when the form starts.
+            Setup();
         }
 
-        // Adds the danger level choices to the combo box.
-        private void SetUpDangerLevelComboBox()
+        // This method adds the choices to the combo boxes.
+        private void Setup()
         {
+            // Add cave type choices.
+            caveTypeComboBox.Items.Add("Wild Cave");
+            caveTypeComboBox.Items.Add("Tourist Cave");
+            caveTypeComboBox.SelectedIndex = 0;
+
+            // Add danger level choices.
             dangerLevelComboBox.Items.Add("Low");
             dangerLevelComboBox.Items.Add("Medium");
             dangerLevelComboBox.Items.Add("High");
             dangerLevelComboBox.Items.Add("Extreme");
-
-            // Select the first option by default.
             dangerLevelComboBox.SelectedIndex = 0;
         }
 
-        // Sets up the list box display.
-        private void SetUpListBox()
-        {
-            cavesListBox.HorizontalScrollbar = true;
-        }
-
-        // Runs when the Add Cave button is clicked.
-        // It reads the input, checks for errors, creates a Cave object,
-        // and shows it in the list box.
+        // This runs when the Add Cave button is clicked.
+        // It reads the user input, creates the correct type of cave,
+        // and adds it to the list box.
         private void addCaveButton_Click(object sender, EventArgs e)
         {
             try
             {
-                // Get the text entered by the user and remove extra spaces.
-                string caveName = caveNameTextBox.Text.Trim();
-                string location = locationTextBox.Text.Trim();
+                // Get basic cave information from the form.
+                string name = caveNameTextBox.Text;
+                string location = locationTextBox.Text;
 
-                // Make sure the cave name was entered.
-                if (string.IsNullOrWhiteSpace(caveName))
+                int depth = int.Parse(depthTextBox.Text);
+                int length = int.Parse(lengthTextBox.Text);
+                bool explored = exploredCheckBox.Checked;
+                string danger = dangerLevelComboBox.Text;
+
+                // This variable will hold either a WildCave or TouristCave object.
+                Cave newCave;
+
+                // Create the correct object based on the cave type selected.
+                if (caveTypeComboBox.Text == "Wild Cave")
                 {
-                    MessageBox.Show("Please enter a cave name.");
-                    caveNameTextBox.Focus();
-                    return;
+                    newCave = new WildCave(
+                        name, location, depth, length, explored, danger,
+                        extraTextBox1.Text,
+                        extraTextBox2.Text,
+                        extraCheckBox.Checked
+                    );
+                }
+                else
+                {
+                    newCave = new TouristCave(
+                        name, location, depth, length, explored, danger,
+                        extraCheckBox.Checked,
+                        decimal.Parse(extraTextBox1.Text),
+                        giftShopCheckBox.Checked
+                    );
                 }
 
-                // Make sure the location was entered.
-                if (string.IsNullOrWhiteSpace(location))
-                {
-                    MessageBox.Show("Please enter a location.");
-                    locationTextBox.Focus();
-                    return;
-                }
+                // Add the new cave object to the list.
+                caves.Add(newCave);
 
-                // Convert the depth and length into whole numbers.
-                int depthInFeet = int.Parse(depthTextBox.Text);
-                int lengthInFeet = int.Parse(lengthTextBox.Text);
-
-                // Make sure depth is not negative.
-                if (depthInFeet < 0)
-                {
-                    MessageBox.Show("Depth cannot be negative.");
-                    depthTextBox.Focus();
-                    return;
-                }
-
-                // Make sure length is not negative.
-                if (lengthInFeet < 0)
-                {
-                    MessageBox.Show("Length cannot be negative.");
-                    lengthTextBox.Focus();
-                    return;
-                }
-
-                // Get the explored checkbox value.
-                bool isExplored = exploredCheckBox.Checked;
-
-                // Get the selected danger level.
-                string dangerLevel = dangerLevelComboBox.SelectedItem.ToString();
-
-                // Create a new Cave object with the user's input.
-                Cave newCave = new Cave(caveName, location, depthInFeet, lengthInFeet, isExplored, dangerLevel);
-
-                // Add the cave object to the list.
-                caveList.Add(newCave);
-
-                // Show the cave summary in the list box.
-                cavesListBox.Items.Add(newCave.GetCaveSummary());
-
-                // Let the user know it worked.
-                MessageBox.Show("Cave added successfully!");
-
-                // Clear the input boxes for the next entry.
-                ClearInputs();
+                // Show the cave information in the list box.
+                cavesListBox.Items.Add(newCave.display());
             }
-            catch (FormatException)
+            catch
             {
-                // Runs if the user types something that is not a whole number.
-                MessageBox.Show("Depth and Length must be whole numbers.");
-            }
-            catch (Exception ex)
-            {
-                // Catches any other unexpected error.
-                MessageBox.Show("Something went wrong: " + ex.Message);
+                // Show an error if the user enters invalid data.
+                MessageBox.Show("Invalid input.");
             }
         }
 
-        // Runs when the Clear button is clicked.
+        // This runs when the Clear button is clicked.
+        // It clears the text boxes on the form.
         private void clearButton_Click(object sender, EventArgs e)
         {
-            ClearInputs();
+            caveNameTextBox.Clear();
+            locationTextBox.Clear();
+            depthTextBox.Clear();
+            lengthTextBox.Clear();
+            extraTextBox1.Clear();
+            extraTextBox2.Clear();
         }
 
-        // Clears all input controls and places the cursor back
-        // in the cave name text box.
-        private void ClearInputs()
+        // This event runs when the form loads.
+        private void CaveExplore_Load(object sender, EventArgs e)
         {
-            caveNameTextBox.Text = "";
-            locationTextBox.Text = "";
-            depthTextBox.Text = "";
-            lengthTextBox.Text = "";
-            exploredCheckBox.Checked = false;
-            dangerLevelComboBox.SelectedIndex = 0;
-            caveNameTextBox.Focus();
-        }
 
-        // Runs when the sample data button is clicked.
-        // This creates 5 example Cave objects for testing or demo use.
-        private void loadSampleDataButton_Click(object sender, EventArgs e)
-        {
-            // Clear old data first.
-            caveList.Clear();
-            cavesListBox.Items.Clear();
-
-            // Create 5 sample cave objects.
-            Cave cave1 = new Cave("Crystal Hollow", "Kentucky", 450, 1200, true, "Medium");
-            Cave cave2 = new Cave("Shadow Drop Cavern", "Texas", 980, 2100, false, "High");
-            Cave cave3 = new Cave("Echo Rift Cave", "Colorado", 700, 1800, true, "Low");
-            Cave cave4 = new Cave("Blackstone Pit", "New Mexico", 1500, 2500, false, "Extreme");
-            Cave cave5 = new Cave("Silver Lake Cavern", "Tennessee", 620, 1600, true, "Medium");
-
-            // Add the sample caves to the list.
-            caveList.Add(cave1);
-            caveList.Add(cave2);
-            caveList.Add(cave3);
-            caveList.Add(cave4);
-            caveList.Add(cave5);
-
-            // Display each cave in the list box.
-            foreach (Cave cave in caveList)
-            {
-                cavesListBox.Items.Add(cave.GetCaveSummary());
-            }
-
-            // Show a message when the sample data is loaded.
-            MessageBox.Show("5 sample cave objects loaded.");
         }
     }
 }
